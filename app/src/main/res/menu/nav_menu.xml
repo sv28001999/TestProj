@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="Home" />
+    <item
+        android:id="@+id/nav_my_profile"
+        android:icon="@drawable/ic_username"
+        android:title="My Profile" />
+<!--    <item-->
+<!--        android:id="@+id/nav_portfolio"-->
+<!--        android:icon="@drawable/ic_portfolio"-->
+<!--        android:title="Portfolio" />-->
+<!--    <item-->
+    <!--        android:id="@+id/nav_terms_of_service"-->
+    <!--        android:icon="@drawable/ic_payment"-->
+    <!--        android:title="Terms of Service" />-->
+    <item
+        android:id="@+id/nav_log_out"
+        android:icon="@drawable/ic_logout"
+        android:title="Log Out" />
+</menu>

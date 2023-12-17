@@ -1,0 +1,8 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" /> <!-- Adjust the radius for rounded corners -->
+            <solid android:color="#ffffff" /> <!-- Background color for the EditText -->
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/drawable/rounded_corners_layout.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Background color -->
+    <item android:drawable="@android:color/black" />
+
+    <!-- Top right and left corners curved -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#ffac1c" /> <!-- Yellow background color -->
+            <corners
+                android:topLeftRadius="30dp"
+                android:topRightRadius="30dp" />
+        </shape>
+    </item>
+
+    <!-- Bottom right and left corners not curved -->
+    <item android:top="30dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#ffac1c" /> <!-- Yellow background color -->
+            <corners
+                android:bottomLeftRadius="0dp"
+                android:bottomRightRadius="0dp" />
+        </shape>
+    </item>
+
+</layer-list>
