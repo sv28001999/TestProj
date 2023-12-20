@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -33,11 +34,13 @@ public class DetailedTransactionHistory extends AppCompatActivity {
         txtStatus = findViewById(R.id.txtTrxnDetailStatus);
         txtRefId = findViewById(R.id.txtTrxnDetailId);
 
-        DecimalFormat df = new DecimalFormat("#.##");
+        DecimalFormat df = new DecimalFormat("0.00");
 
         SharedPreferences sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
 
-        txtAmount.setText("₹" + df.format(Double.parseDouble(Objects.requireNonNull(getIntent().getStringExtra(TransactionConstants.AMOUNT)))));
+        Log.d("amountReceive", getIntent().getStringExtra(TransactionConstants.AMOUNT));
+
+        txtAmount.setText("₹");
 //        txtUsdtAmount.setText(getIntent().getStringExtra(TransactionConstants.USDT_AMOUNT));
         txtSendBy.setText(sharedPreferences.getString(Constants.SF_USER_ID, "NA"));
         txtDate.setText(getIntent().getStringExtra(TransactionConstants.DATE));

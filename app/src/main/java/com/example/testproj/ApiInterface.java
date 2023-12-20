@@ -8,6 +8,7 @@ import com.example.testproj.models.LoginResponse;
 import com.example.testproj.models.PaymentReq;
 import com.example.testproj.models.PaymentRes;
 import com.example.testproj.models.TransactionData;
+import com.example.testproj.models.TransactionReportData;
 import com.example.testproj.models.TransactionReqBody;
 import com.example.testproj.models.UserDataRequestBody;
 import com.example.testproj.models.UserDataResponseBody;
@@ -31,8 +32,11 @@ public interface ApiInterface {
     @POST("auth/validate-otp")
     Call<VerifyOTPRes> verifyOtp(@Body VerifyOTPReq verifyOTPReq);
 
-    @POST("user/dashboard")
+    @GET("user/dashboard")
     Call<DashBoardRes> getDashboardData(@Header("Authorization") String authToken);
+
+    @GET("pay/transactions")
+    Call<TransactionReportData> getTransactions(@Header("Authorization") String authToken, @Query("pageNo") int pageNo, @Query("pageSize") int pageSize);
 
     @POST("crypnet/userdetails")
     Call<UserDataResponseBody> getUserDetails(@Body UserDataRequestBody userDataRequestBody);

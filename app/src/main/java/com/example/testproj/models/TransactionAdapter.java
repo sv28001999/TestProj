@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.testproj.DetailedTransactionHistory;
 import com.example.testproj.R;
 import com.example.testproj.TransactionConstants;
+import com.example.testproj.TransactionReport;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -27,10 +28,10 @@ import java.util.List;
 import java.util.Locale;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
-    private ArrayList<TransactionData.Datum> transactionList;
+    private ArrayList<TransactionReportData.Data> transactionList;
     private Context context;
 
-    public TransactionAdapter(ArrayList<TransactionData.Datum> transactionList, Context context) {
+    public TransactionAdapter(ArrayList<TransactionReportData.Data> transactionList, Context context) {
         this.transactionList = transactionList;
         this.context = context;
     }
@@ -44,13 +45,13 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull TransactionAdapter.TransactionViewHolder holder, int position) {
-        TransactionData.Datum transaction = transactionList.get(position);
+        TransactionReportData.Data transaction = transactionList.get(position);
 
         DecimalFormat df = new DecimalFormat("0.00");
-        String originalDateString = transaction.getTransactioN_DATE();
+        String originalDateString = transaction.getCreatedOn();
         Log.d("Transaction Date", originalDateString);
 
-        SimpleDateFormat originalFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
+        SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
 
         String formattedDate = null;
         try {
@@ -65,10 +66,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
 
         // Bind data to views in the ViewHolder
-        holder.txtItemAmount.setText("- ₹" + df.format(Double.parseDouble(transaction.getAmount())));
-        holder.txtItemName.setText(transaction.getVpa_id());
+        holder.txtItemAmount.setText("- ₹" + df.format(transaction.getAmountInRupee()));
+        holder.txtItemName.setText(transaction.getBene_Name());
         holder.txtItemDate.setText(formattedDate);
-        holder.txtItemRefId.setText(transaction.getRefId());
+        holder.txtItemRefId.setText(transaction.getReferenceNo());
     }
 
     @Override
@@ -94,17 +95,17 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 //        notifyDataSetChanged();
 //    }
 
-    public TransactionData.Datum getItem(int position) {
+    public TransactionReportData.Data getItem(int position) {
         return transactionList.get(position);
     }
 
     // Method to get the filtered list
-    public List<TransactionData.Datum> getFilteredList() {
+    public List<TransactionReportData.Data> getFilteredList() {
         return transactionList;
     }
 
     // Method to update the adapter data
-    public void updateData(List<TransactionData.Datum> transactions) {
+    public void updateData(List<TransactionReportData.Data> transactions) {
         transactionList.clear();
         transactionList.addAll(transactions);
 //        filter(""); // Reset filter with an empty string to display all items
@@ -134,9 +135,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        TransactionData.Datum clickedTransaction = transactionList.get(position);
+                        TransactionReportData.Data clickedTransaction = transactionList.get(position);
 
-                        String originalDateString = clickedTransaction.getTransactioN_DATE();
+                        String originalDateString = clickedTransaction.getCreatedOn();
                         Log.d("Transaction Date", originalDateString);
 
                         SimpleDateFormat originalFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
@@ -154,14 +155,16 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                         }
 
                         Intent intent = new Intent(context, DetailedTransactionHistory.class);
-                        intent.putExtra(TransactionConstants.AMOUNT, clickedTransaction.getAmount());
-                        intent.putExtra(TransactionConstants.USDT_AMOUNT, clickedTransaction.getAmountInUSD());
+                        Log.d("amountInRupee", Double.toString(clickedTransaction.getAmountInRupee()));
+                        intent.putExtra(TransactionConstants.AMOUNT, clickedTransaction.getAmountInRupee());
+                        intent.putExtra(TransactionConstants.USDT_AMOUNT, clickedTransaction.getUSDAmount());
                         intent.putExtra(TransactionConstants.DATE, formattedDate);
-                        intent.putExtra(TransactionConstants.VPA_ID, clickedTransaction.getVpa_id());
-                        intent.putExtra(TransactionConstants.REF_ID, clickedTransaction.getRefId());
+                        intent.putExtra(TransactionConstants.VPA_ID, clickedTransaction.getBene_Name());
+                        intent.putExtra(TransactionConstants.REF_ID, clickedTransaction.getReferenceNo());
                         intent.putExtra(TransactionConstants.REMARK, clickedTransaction.getRemarks());
-                        intent.putExtra(TransactionConstants.STATUS, clickedTransaction.getMessage());
-                        intent.putExtra(TransactionConstants.MODE, clickedTransaction.getMode());
+                        intent.putExtra(TransactionConstants.STATUS, "Payment Successful");
+                        if (!clickedTransaction.getBene_AccountNo().isEmpty())
+                            intent.putExtra(TransactionConstants.MODE, "IMPS");
                         context.startActivity(intent);
                     }
                 }

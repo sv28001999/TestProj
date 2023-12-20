@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.example.testproj.models.Constants;
 import com.example.testproj.models.TransactionAdapter;
 import com.example.testproj.models.TransactionData;
+import com.example.testproj.models.TransactionReportData;
 import com.example.testproj.models.TransactionReqBody;
 import com.example.testproj.models.UserDataResponseBody;
 
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,7 +41,7 @@ import retrofit2.Retrofit;
 public class TransactionReport extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private ArrayList<TransactionData.Datum> transactionListData = new ArrayList<>();
+    private ArrayList<TransactionReportData.Data> transactionListData = new ArrayList<>();
     private ApiInterface apiInterface;
     SharedPreferences sharedPreferences;
     private ProgressDialog progressDialog;
@@ -47,7 +49,7 @@ public class TransactionReport extends AppCompatActivity {
     private EditText editTextSearch;
     String formattedDateTime;
     TransactionAdapter adapter;
-    String userIdData;
+    private String userIdData, token;
     int pageNo = 1;
     private boolean isLoading = false;
     private boolean isLastPage = false;
@@ -73,6 +75,7 @@ public class TransactionReport extends AppCompatActivity {
         apiInterface = retrofit.create(ApiInterface.class);
         sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
         userIdData = sharedPreferences.getString(Constants.SF_USER_ID, "NA");
+        token = sharedPreferences.getString(Constants.LOGIN_TOKEN, "NA");
 
         Toolbar toolbar = findViewById(R.id.myTrxnToolbar);
 
@@ -131,66 +134,112 @@ public class TransactionReport extends AppCompatActivity {
                 searchText = editTextSearch.getText().toString();
                 adapter.clearList();
                 pageNo = 1;
-                fetchData(userIdData, pageNo, searchText);
+                fetchData(token, pageNo, searchText);
             }
         });
 
-        fetchData(userIdData, pageNo, searchText);
+        fetchData(token, pageNo, searchText);
     }
 
     private void loadMoreItems() {
         if (!isLoading()) {
             pageNo++;
-            fetchData(userIdData, pageNo, searchText);
+            fetchData(token, pageNo, searchText);
         }
     }
 
-    private void fetchData(String userId, int pageNo, String filterText) {
+//    private void fetchData(String userId, int pageNo, String filterText) {
+//        showLoader();
+//        isLoading = true;
+//        LocalDateTime currentDateTime = null;
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            currentDateTime = LocalDateTime.now();
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//            formattedDateTime = currentDateTime.format(formatter);
+//        }
+//
+//        TransactionReqBody transactionReqBody = new TransactionReqBody(userId, "2023-11-28 07:07:00", formattedDateTime, filterText, pageNo, 10);
+//
+//        Call<TransactionData> call = apiInterface.getTransactionSummary(transactionReqBody);
+//
+//        call.enqueue(new Callback<TransactionData>() {
+//            @Override
+//            public void onResponse(@NonNull Call<TransactionData> call, @NonNull Response<TransactionData> response) {
+//                if (response.isSuccessful()) {
+//                    nullTransaction.setVisibility(View.GONE);
+//                    TransactionData transactionData = response.body();
+//
+//                    assert transactionData != null;
+//                    ArrayList<TransactionData.Datum> transactionList = transactionData.getData();
+//                    if (transactionList != null) {
+//                        transactionListData.addAll(transactionList);
+//                        adapter.notifyDataSetChanged();
+//                        isLoading = false;
+//                    }
+//                    dismissLoader();
+//
+//                } else {
+////                    Toast.makeText(TransactionReport.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+//                    nullTransaction.setVisibility(View.VISIBLE);
+//                    dismissLoader();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(@NonNull Call<TransactionData> call, @NonNull Throwable t) {
+//                Log.d("isFailed", "True");
+//                isLoading = false;
+//                isLastPage = true;
+//                nullTransaction.setVisibility(View.VISIBLE);
+//                dismissLoader();
+//            }
+//        });
+//    }
+
+    public void fetchData(String token, int pageNo, String searchText) {
         showLoader();
         isLoading = true;
-        LocalDateTime currentDateTime = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            currentDateTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            formattedDateTime = currentDateTime.format(formatter);
-        }
+        Call<TransactionReportData> call = apiInterface.getTransactions("Bearer " + token, pageNo, 10);
 
-        TransactionReqBody transactionReqBody = new TransactionReqBody(userId, "2023-11-28 07:07:00", formattedDateTime, filterText, pageNo, 10);
-
-        Call<TransactionData> call = apiInterface.getTransactionSummary(transactionReqBody);
-
-        call.enqueue(new Callback<TransactionData>() {
+        call.enqueue(new Callback<TransactionReportData>() {
             @Override
-            public void onResponse(@NonNull Call<TransactionData> call, @NonNull Response<TransactionData> response) {
+            public void onResponse(Call<TransactionReportData> call, Response<TransactionReportData> response) {
                 if (response.isSuccessful()) {
-                    nullTransaction.setVisibility(View.GONE);
-                    TransactionData transactionData = response.body();
-
-                    assert transactionData != null;
-                    ArrayList<TransactionData.Datum> transactionList = transactionData.getData();
-                    if (transactionList != null) {
+                    nullTransaction.setVisibility(View.VISIBLE);
+                    TransactionReportData transactionReportData = response.body();
+                    if (transactionReportData.getStatusCode() == 200 && Objects.equals(transactionReportData.getStatusType(), "S")) {
+                        Log.d("isSuccessful", "true");
+                        ArrayList<TransactionReportData.Data> transactionList = transactionReportData.getData();
                         transactionListData.addAll(transactionList);
                         adapter.notifyDataSetChanged();
                         isLoading = false;
+                        dismissLoader();
+                    } else {
+                        isLoading = false;
+                        isLastPage = true;
+                        nullTransaction.setVisibility(View.VISIBLE);
+                        Toast.makeText(TransactionReport.this, "Service Unavailable from host", Toast.LENGTH_SHORT).show();
+                        dismissLoader();
                     }
-                    dismissLoader();
-
                 } else {
-//                    Toast.makeText(TransactionReport.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                    isLoading = false;
+                    isLastPage = true;
                     nullTransaction.setVisibility(View.VISIBLE);
+                    Toast.makeText(TransactionReport.this, "Service Unavailable and code is:" + Integer.toString(response.code()), Toast.LENGTH_SHORT).show();
                     dismissLoader();
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<TransactionData> call, @NonNull Throwable t) {
-                Log.d("isFailed", "True");
+            public void onFailure(Call<TransactionReportData> call, Throwable t) {
                 isLoading = false;
                 isLastPage = true;
                 nullTransaction.setVisibility(View.VISIBLE);
+                Toast.makeText(TransactionReport.this, "Network issue..", Toast.LENGTH_SHORT).show();
                 dismissLoader();
             }
         });
+
     }
 
     private void showLoader() {
