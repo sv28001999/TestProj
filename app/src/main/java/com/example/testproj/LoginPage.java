@@ -22,6 +22,7 @@ import com.example.testproj.models.LoginResponse;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -106,14 +107,15 @@ public class LoginPage extends AppCompatActivity {
                     // Login successful, handle the response
                     LoginResponse loginResponse = response.body();
                     assert loginResponse != null;
-                    if (loginResponse.status) {
+                    if (loginResponse.getStatusCode() == 200 && Objects.equals(loginResponse.getStatusType(), "S")) {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString(Constants.SF_USER_ID, loginResponse.getData().getUserId());
-                        editor.putString(Constants.SF_LOGIN_ID, loginResponse.getData().getLoginId());
+                        editor.putString(Constants.SF_USER_ID, username);
+//                        editor.putString(Constants.SF_USER_ID, loginResponse.getData().getUserId());
+//                        editor.putString(Constants.SF_LOGIN_ID, loginResponse.getData().getLoginId());
                         editor.apply();
                         Intent intent = new Intent(LoginPage.this, OTPVerificationActivity.class);
-                        intent.putExtra("LOGIN_EMAIL", loginResponse.getData().getEmailId());
-                        intent.putExtra("LOGIN_OTP", loginResponse.getData().getOtp());
+                        intent.putExtra("LOGIN_EMAIL", username);
+//                        intent.putExtra("LOGIN_OTP", loginResponse.getData().getOtp());
                         dismissLoader();
                         startActivity(intent);
                         finish();

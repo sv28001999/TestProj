@@ -1,33 +1,64 @@
 package com.example.testproj.models;
 
 public class LoginResponse {
-    public boolean status;
-    public String message;
+    public int statusCode;
+    public String statusText;
+    public String statusType;
     public Data data;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(boolean status, String message, Data data) {
-        this.status = status;
-        this.message = message;
-        this.data = data;
+    public LoginResponse(int statusCode, String statusText, String statusType) {
+        this.statusCode = statusCode;
+        this.statusText = statusText;
+        this.statusType = statusType;
     }
 
-    public boolean isStatus() {
-        return status;
+    public int getStatusCode() {
+        return statusCode;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
-    public String getMessage() {
-        return message;
+    public String getStatusText() {
+        return statusText;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setStatusText(String statusText) {
+        this.statusText = statusText;
+    }
+
+    public String getStatusType() {
+        return statusType;
+    }
+
+    public void setStatusType(String statusType) {
+        this.statusType = statusType;
+    }
+
+    //    public LoginResponse(int statusCode, String statusText, Data data) {
+//        this.statusCode = statusCode;
+//        this.statusText = statusText;
+//        this.data = data;
+//    }
+
+    public int isstatusCode() {
+        return statusCode;
+    }
+
+    public void setstatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getstatusText() {
+        return statusText;
+    }
+
+    public void setstatusText(String statusText) {
+        this.statusText = statusText;
     }
 
     public Data getData() {

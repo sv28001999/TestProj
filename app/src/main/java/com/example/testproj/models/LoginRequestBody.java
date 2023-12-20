@@ -10,6 +10,11 @@ public class LoginRequestBody {
     public LoginRequestBody() {
     }
 
+    public LoginRequestBody(String userId, String password) {
+        this.userId = userId;
+        this.password = password;
+    }
+
     public LoginRequestBody(String userId, String password, String ipAddress, String url, int cookieLoginId) {
         this.userId = userId;
         this.password = password;

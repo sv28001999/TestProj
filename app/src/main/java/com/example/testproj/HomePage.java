@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.testproj.models.Constants;
+import com.example.testproj.models.DashBoardRes;
 import com.example.testproj.models.UserDataRequestBody;
 import com.example.testproj.models.UserDataResponseBody;
 import com.example.testproj.models.WalletBalanceResponse;
@@ -33,6 +34,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,7 +46,7 @@ import retrofit2.Retrofit;
 public class HomePage extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private TextView tvFullName, tvWalletBalance, tvNavFullName, tvJrcBalance;
-    private String userId;
+    private String userId, loginToken;
     private SharedPreferences sharedPreferences;
     private ApiInterface apiInterface;
     private ProgressDialog progressDialog;
@@ -124,6 +126,8 @@ public class HomePage extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
         userId = sharedPreferences.getString(Constants.SF_USER_ID, "NA");
+        loginToken = sharedPreferences.getString(Constants.LOGIN_TOKEN, "NA");
+        Log.d("authToken1", loginToken);
 
         Retrofit retrofit = RetrofitClient.getInstance();
         apiInterface = retrofit.create(ApiInterface.class);
@@ -180,35 +184,40 @@ public class HomePage extends AppCompatActivity {
             return true;
         });
 
-        refreshUserDetail(userId);
+        refreshUserDetail();
     }
 
-    public void refreshUserDetail(String requestUserId) {
+    public void refreshUserDetail() {
         showLoader();
-        UserDataRequestBody userDataRequestBody = new UserDataRequestBody(requestUserId);
+//        UserDataRequestBody userDataRequestBody = new UserDataRequestBody(requestUserId);
 
-        Call<UserDataResponseBody> call = apiInterface.getUserDetails(userDataRequestBody);
+        Call<DashBoardRes> call = apiInterface.getDashboardData("Bearer " + loginToken);
 
-        call.enqueue(new Callback<UserDataResponseBody>() {
+        call.enqueue(new Callback<DashBoardRes>() {
             @SuppressLint("SetTextI18n")
             @Override
-            public void onResponse(@NonNull Call<UserDataResponseBody> call, @NonNull Response<UserDataResponseBody> response) {
+            public void onResponse(@NonNull Call<DashBoardRes> call, @NonNull Response<DashBoardRes> response) {
                 if (response.isSuccessful()) {
                     // Login successful, handle the response
                     // You can navigate to the next screen or perform other actions here
-                    UserDataResponseBody userDataResponseBody = response.body();
+                    DashBoardRes userDataResponseBody = response.body();
+                    Log.d("statusType", userDataResponseBody.getStatusType());
                     assert userDataResponseBody != null;
-                    tvFullName.setText(userDataResponseBody.getData().getFullName());
-                    tvNavFullName.setText(userDataResponseBody.getData().getFullName());
-                    Constants.walletBalance = userDataResponseBody.getData().getWalletBalance();
-                    tvWalletBalance.setText("JRC " + Constants.walletBalance);
+                    if (userDataResponseBody.statusCode == 200 && Objects.equals(userDataResponseBody.statusType, "S")) {
+                        tvFullName.setText(userDataResponseBody.getData().getFullName());
+                        tvNavFullName.setText(userDataResponseBody.getData().getFullName());
+                        Constants.walletBalance = userDataResponseBody.getData().getWalletBalance();
+                        tvWalletBalance.setText("JRC " + Constants.walletBalance);
 //                    getWalletInfo();
-                    DecimalFormat df = new DecimalFormat("0.00");
-                    String formattedAmount = df.format(Double.parseDouble(userDataResponseBody.getData().getWalletBalance()) * 90);
-                    tvJrcBalance.setText("[₹" + formattedAmount + "]");
-                    Log.d("Response", "Success");
-                    dismissLoader();
-                    saveData(userDataResponseBody);
+                        DecimalFormat df = new DecimalFormat("0.00");
+                        String formattedAmount = df.format(userDataResponseBody.getData().getWalletBalance() * 90);
+                        tvJrcBalance.setText("[₹" + formattedAmount + "]");
+                        Log.d("Response", "Success");
+                        dismissLoader();
+                        saveData(userDataResponseBody);
+                    } else {
+                        startActivity(new Intent(HomePage.this, LoginPage.class));
+                    }
                 } else {
                     // Handle the API error
                     // For example, show an error message to the user
@@ -239,7 +248,7 @@ public class HomePage extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(@NonNull Call<UserDataResponseBody> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<DashBoardRes> call, @NonNull Throwable t) {
                 // Handle network or other failures
                 // For example, show a network error message
                 dismissLoader();
@@ -248,7 +257,7 @@ public class HomePage extends AppCompatActivity {
         });
     }
 
-    public void saveData(UserDataResponseBody dataResponseBody) {
+    public void saveData(DashBoardRes dataResponseBody) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(Constants.SF_FULL_NAME, dataResponseBody.getData().getFullName());
         editor.putString(Constants.SF_EMAIL, dataResponseBody.getData().getEmailId());
@@ -309,6 +318,7 @@ public class HomePage extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(Constants.SF_USER_ID, "NA");
         editor.putString(Constants.SF_LOGIN_ID, "NA");
+        editor.putString(Constants.LOGIN_TOKEN, "NA");
         editor.putBoolean(Constants.IS_LOGGED_IN, false);
         editor.apply();
         startActivity(new Intent(HomePage.this, LoginPage.class));
@@ -385,6 +395,6 @@ public class HomePage extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-//        refreshUserDetail(userId);
+        refreshUserDetail();
     }
 }

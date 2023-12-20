@@ -68,7 +68,7 @@ public class PaymentPage extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(Constants.PREFS_NAME, MODE_PRIVATE);
         sfUserId = sharedPreferences.getString(Constants.SF_USER_ID, "NA");
 
-        userWalletBalance = Double.parseDouble(Constants.walletBalance);
+        userWalletBalance = Constants.walletBalance;
 
         Toolbar toolbar = findViewById(R.id.payToolbar);
 
